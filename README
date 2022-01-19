@@ -1,0 +1,14 @@
+To use the software (in R):
+1. Unpack Cpack.zip (some of the C code may need recompiling)
+2. Unpack funs.zip and utils.zip, and source() these files within main R script (as done at the top of script volumetrics_fit.R)
+3. File volumetrics_fit.R contains:
+- the required environment (including libraries and script files);
+- the main function (volumetrics()) to use to fit the regularized volumetric model of tracer uptake distribution;
+- another few utility functions. 
+
+The main function expects arguments xr, xt, and eroi, as follows:
+- xr is a 5-column data frame (uptake,weigth,x1,x2,x3) in the raw coordinates
+- xt is a 5-column data frame (uptake,weigth,x1,x2,x3) in the PCA coordinates
+- eroi is the output of extract.roi() from package mia, which is available at https://github.com/ericwol/mia/releases/tag/1.0.4. An example of use of extract.roi():
+eroi = extract.roi(xr,pcut=.25,alpha=5,nb=26,nres=25)
+
