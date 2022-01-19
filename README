@@ -1,5 +1,5 @@
 To use the software (in R):
-1. Unpack Cpack.zip (some of the C code may need recompiling)
+1. Unpack Cpack.zip (some of the C code may need recompiling; the tar files within the Cpack folder may also need unarchiving (depending on setup))
 2. Unpack funs.zip and utils.zip, and source() these files within main R script (as done at the top of script volumetrics_fit.R)
 3. File volumetrics_fit.R contains:
 - the required environment (including libraries and script files);
