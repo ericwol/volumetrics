@@ -1,9 +1,39 @@
-do.it <- function(xr,xt,eroi){
+#! /usr/bin/Rscript --vanilla
+rm(list=ls(pos=.GlobalEnv), pos=.GlobalEnv)
+Sys.setenv(TZ="Europe/Dublin")
+library(foreach)
+library(splines)
+library(ic.infer)
+library(Matrix)
+library(plot3D)
+library(oce)
+library(colorRamps)
+dyn.load("./Cpack/libdlam.so")
+dyn.load("./Cpack/libmaths.so")
+options(CBoundsCheck = TRUE)
+source("utils/impro.R")
+source("utils/amide.R")
+source("utils/tictoc.r")
+source("funs/tubemod-funs.R")
+source("funs/LM_optim.R")
+source("funs/C_dlam.R")
+source("funs/C_maths.R")
+source("funs/exsarcroi.R")
+source("funs/foos.R")
+source("funs/plot_phases.R")
+source("funs/regul_foos.R")
+source("funs/S_rfuns.R")
+source("funs/tmi2015_funs.R")
+
+volumetrics <- function(xr,xt,eroi){
 # Input:
-# - xr is a 5-column data frame (uptake,weigth,x2,x2,x3) in the raw coordinates
-# - xt is a 5-column data frame (uptake,weigth,x2,x2,x3) in the PCA coordinates
-# - eroi is the output of tubroi()
-	#
+# - xr is a 5-column data frame (uptake,weigth,x1,x2,x3) in the raw coordinates
+# - xt is a 5-column data frame (uptake,weigth,x1,x2,x3) in the PCA coordinates
+# - eroi is the output of extract.roi() from package mia 
+#   (available at https://github.com/ericwol/mia/releases/tag/1.0.4) 
+# An example of use of extract.roi():
+# 	eroi = extract.roi(xr,pcut=.25,alpha=5,nb=26,nres=25)
+#
 	# main settings:
 	if(nrow(xr)>3000){
 		nb = Jh = 26 
@@ -512,3 +542,46 @@ do.it <- function(xr,xt,eroi){
 			tictoc=tictoc)
 	return(regmod.out)
 }
+
+# ------------------------------------------------------------------------ funs...
+minmax.scale <- function(yh){
+	return(	(yh-min(yh)) / (max(yh)-min(yh)))
+}
+get.gradients <- function(u,yh,resign=TRUE,rescale=TRUE){
+	# u = u/median(ifelse(u>.001,u,.001))
+	if(rescale){yh = minmax.scale(yh)}
+	grad = (approx(u,yh,xout=u*1.1,rule=2)$y-approx(u,yh,xout=u*.9,rule=2)$y)/(ifelse(u>.01,u,.01)*.2)
+	if(resign){grad = -grad}
+	return(grad)
+}
+add.alpha <- function(COLORS, ALPHA){
+	if(missing(ALPHA)) stop("provide a value for alpha between 0 and 1")
+	RGB <- col2rgb(COLORS, alpha=TRUE)
+	RGB[4,] <- round(RGB[4,]*ALPHA)
+	NEW.COLORS <- rgb(RGB[1,], RGB[2,], RGB[3,], RGB[4,], maxColorValue = 255)
+	return(NEW.COLORS)
+}
+interp.slice <- function(slice){
+	gx = c(1:dim(slice)[2])
+	gy = c(1:dim(slice)[1]) 
+	gz = 1
+	tix = set.grid.from.midpoint(gx,.5)
+	tiy = set.grid.from.midpoint(gy,.5) 
+	tiz = gz
+	slicea = array(slice,dim=c(dim(slice),1))
+	return(trilin.approx(gx,gy,gz,slicea,tix,tiy,tiz)[,,1])
+}
+na.rm <- function(x){
+	return(x[which(!is.na(x))])
+}
+quantize <- function(x,bins){
+	N = length(x)
+	B = length(bins)
+	X = matrix(rep(x,each=B), byrow=TRUE, ncol=B, nrow=N)
+	G = matrix(rep(bins,each=N), byrow=FALSE, ncol=B, nrow=N)
+	d = unlist(apply(abs(X-G),1,which.min))
+	o = numeric(N)*NA
+	o[which(!is.na(x))] = bins[d]
+	return(list(values=c(o),indices=d))
+}
+
