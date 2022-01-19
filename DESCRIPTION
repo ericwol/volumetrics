@@ -1,0 +1,17 @@
+Package: volumetrics
+Version: 1.0
+Date: 2022-01-19
+Title: Volumetrics - Analysis of volumetric distributions for medical imaging
+Authors@R: c(person("Eric", "Wolsztynski", email = "eric.w@ucc.ie", role = c("aut","cre")), person("Finbarr", "O'Sullivan", email = "f.osullivan@ucc.ie", role = "aut"))
+Author: Eric Wolsztynski [aut, cre],
+	Finbarr O'Sullivan [aut]
+Maintainer: Eric Wolsztynski <eric.w@ucc.ie>
+Depends: R (>= 3.0.0)
+Description: This software implements a regularised volumetric modelling technique for the analysis of 3D image intensities (e.g. PET uptake data) in radiology, including the computation of uptake characteristics at the voxel level. 
+License: GPL (>=3)
+URL: http://euclid.ucc.ie/eric
+Encoding: UTF-8
+LazyData: true
+Imports: quadprog,
+    stats
+RoxygenNote: 6.0.1
